@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Эксперимент</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+</head>
+<body>
+<div class="text-center mb-2">
+    <div class="m-2">
+        <input form="results" name="name" type="text" placeholder="Ваше имя" required>
+    </div>
+    <div class="m-2">
+        <p>
+            Как переводятся на шугнанский следующие слова: огонь, нос, обувь, собака, открытый, короткий, мост, овца?
+        </p>
+        <p>
+            Вам нужно будет прослушать чтение слова и выбрать, что было произнесено. Для выбора используйте клавиши
+            «1» и «0». Слова могут повторяться.
+        </p>
+        <p>Старайтесь выбирать то значение, которое соответствует услышанному. Не задумывайтесь долго, указывайте первый пришедший в голову ответ.</p>
+        <span>Прослушать чтение можно <b>только один раз</b>!</span>
+    </div>
+    <div class="accordion my-2 mx-4" id="words">
+        {% for w in word_stimuli %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="h{{ w[0] }}">
+                    <button id="b{{ w[0] }}" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#w{{ w[0] }}" aria-expanded="false" aria-controls="w{{ w[0] }}">
+                        Слово {{ w[0] }}
+                    </button>
+                </h2>
+                <div id="w{{ w[0] }}" class="accordion-collapse collapse" aria-labelledby="h{{ w[0] }}" data-bs-parent="#words">
+                    <div class="accordion-body">
+                        <p class="h4">
+                            Что это значит?
+                        </p>
+                        <audio controls id="{{ w[0] }}" onpause="stop_playing(this.id)" tabindex="-1">
+                            <source src="static/{{ w[1] }}" type="audio/wav">
+                            Your browser does not support the audio element.
+                        </audio>
+                        <div class="row justify-columns-between">
+                            {% for a in w[2] %}
+                                <div class="col">
+                                    <button class="btn btn-primary" id="{{ w[0] }}_{{ a[0] }}" onclick="clicking_time(this.id, {{ w[0] }})" data-bs-toggle="collapse" data-bs-target="#w{{ w[0] }}" type="button" disabled>
+                                        {{ a[1] }} <b>(нажмите {% if a[0] == 1 %}1{% elif a[0] == 2 %}0{% endif %})</b>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <hr>
+    <div class="m-2">
+        <p>
+            Теперь условия меняются: вы услышите два слова, произнесенных друг за другом. Выберите то слово, которое звучит первым.
+        </p>
+        <p>
+            Для выбора используйте клавиши «1» и «0». Пары слов могут повторяться.
+        </p>
+        <p>Старайтесь выбирать то значение, которое соответствует первому слову из произнесенных. Не задумывайтесь долго, указывайте первый пришедший в голову ответ.</p>
+        <span>Прослушать чтение можно <b>только один раз</b>!</span>
+    </div>
+    <div class="accordion my-2 mx-4" id="paired">
+        {% for w in paired_stimuli %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="h{{ w[0] }}">
+                    <button id="b{{ w[0] }}" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#w{{ w[0] }}" aria-expanded="false" aria-controls="w{{ w[0] }}">
+                        Пара {{ w[0] }}
+                    </button>
+                </h2>
+                <div id="w{{ w[0] }}" class="accordion-collapse collapse" aria-labelledby="h{{ w[0] }}" data-bs-parent="#paired">
+                    <div class="accordion-body">
+                        <p class="h4">
+                                Что звучит первым?
+                            </p>
+                        <audio controls id="{{ w[0] }}" onpause="stop_playing(this.id)" tabindex="-1">
+                            <source src="static/{{ w[1] }}" type="audio/wav">
+                            Your browser does not support the audio element.
+                        </audio>
+                        <div class="row justify-columns-between">
+
+                            {% for a in w[2] %}
+                                <div class="col">
+                                    <button class="btn btn-primary" id="{{ w[0] }}_{{ a[0] }}" onclick="clicking_time(this.id, {{ w[0] }})" data-bs-toggle="collapse" data-bs-target="#w{{ w[0] }}" type="button" disabled>
+                                        {{ a[1] }} <b>(нажмите {% if a[0] == 1 %}1{% elif a[0] == 2 %}0{% endif %})</b>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="m-2">
+        <form action="" method="post" id="results">
+            <input class="d-none" id="results_dict" name="results_dict" type="text">
+            <button class="btn btn-danger" type="submit">Отправить результаты</button>
+        </form>
+    </div>
+</div>
+<script>
+    function clicking_time(id, audio_id) {
+        document.getElementById('results_dict').value = document.getElementById('results_dict').value + '%' + id + ';' + performance.now();
+        document.getElementById('b'+audio_id).disabled = true;
+        document.getElementById('b'+audio_id).classList.add("text-success");
+        document.getElementById('b'+audio_id).innerText = document.getElementById('b'+audio_id).innerText + ' ✅';
+    };
+
+    function stop_playing(id) {
+        document.getElementById('results_dict').value = document.getElementById('results_dict').value + '%' + id + ';' + performance.now();
+        $(`[id^="${id}_"]`).prop('disabled', false);
+        document.onkeydown = function (e) {
+            if (!document.getElementById('results_dict').value.includes(`${id}_`)) {
+                var keyCode = e.keyCode;
+                if (keyCode == 48) {
+                    $(`#w${id}`).collapse("toggle");
+                    clicking_time(`${id}_2`, `${id}`);
+                } else if (keyCode == 49) {
+                    $(`#w${id}`).collapse("toggle");
+                    clicking_time(`${id}_1`, `${id}`);
+                }
+                ;
+            }
+    };
+};
+</script>
+</body>
+</html>
